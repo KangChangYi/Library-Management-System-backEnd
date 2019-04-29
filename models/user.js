@@ -1,8 +1,11 @@
-const Joi = require('joi');              // 引入数据验证类
+const Joi = require('@hapi/joi');              // 引入数据验证类
 const mongoose = require('mongoose');        // 导入 mongodb
 
-const User = mongoose.model('users', new mongoose.Schema({
-    roleId: { type: String, required: true },
+const User = mongoose.model('user', new mongoose.Schema({
+    role: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "role"
+    },
     userName: { type: String, required: true },
     passWord: { type: String, required: true },
     nickName: String,
@@ -13,7 +16,7 @@ const User = mongoose.model('users', new mongoose.Schema({
 // 验证
 function validateUser (data) {
     const rule = {
-        roleId: Joi.string().required(),
+        role: Joi.string(),
         userName: Joi.string().required(),
         passWord: Joi.string().required(),
         nickName: Joi.string(),

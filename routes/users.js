@@ -5,14 +5,18 @@ const { User, validateUser } = require('../models/user');   // 导入 User 模�
 
 // GET 用户列表
 router.get('/', async (req, res) => {
-    const userList = await User.find().sort('roleName');
+    const userList = await User
+    .find()
+    .populate('role','roleName-_id')
     res.send(userList);
 });
 
 // GET 用户列表（id）
 router.get('/:id', async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User
+        .findById(req.params.id)
+        .populate('role','roleName-_id')
         res.send(user);
     } catch (error) {
         res.status('404').send('未找到相应id的用户');
@@ -26,7 +30,7 @@ router.post('/', async (req, res) => {
         return res.status('400').send(error.details[0].message)
     };
     let user = new User({
-        roleId: req.body.roleId,
+        role: req.body.role,
         userName: req.body.userName,
         passWord: req.body.passWord,
         nickName: req.body.nickName,
@@ -45,7 +49,6 @@ router.put('/:id', async (req, res) => {
     };
     try {
         const user = await User.findByIdAndUpdate(req.params.id, {
-            roleId: req.body.roleId,
             userName: req.body.userName,
             passWord: req.body.passWord,
             nickName: req.body.nickName,
