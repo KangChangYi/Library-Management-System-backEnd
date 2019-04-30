@@ -15,7 +15,11 @@ const BookInfo = mongoose.model('bookInfo', new mongoose.Schema({
     bookName: String,
     author: String,
     press: String,
-    publicationDate: Date
+    publicationDate: {
+        type: Date,
+        required: true,
+        default: Date.now
+    }
 }));
 
 function validateBookInfo (data) {

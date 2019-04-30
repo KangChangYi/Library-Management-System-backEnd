@@ -88,7 +88,7 @@ router.post('/book/:id', async (req, res) => {
         res.send(result);
     } catch (error) {
         return res.status('404').send('未找到相应id的图书信息');
-    }
+    };
 });
 
 // DELETE 图书数量删除
@@ -101,7 +101,7 @@ router.delete('/book/:id/:bid', async (req, res) => {
         res.send(result)
     } catch (error) {
         return res.status('404').send('未找到对应id的图书信息');
-    }
+    };
 })
 
 module.exports = router;

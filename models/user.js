@@ -1,27 +1,37 @@
 const Joi = require('@hapi/joi');              // 引入数据验证类
 const mongoose = require('mongoose');        // 导入 mongodb
+const config = require('config');
+const jwt = require("jsonwebtoken");
 
-const User = mongoose.model('user', new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     role: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "role"
     },
-    userName: { type: String, required: true },
+    // accountName: { type: String, required: true },
+    email: { type: String, required: true },
     passWord: { type: String, required: true },
-    nickName: String,
-    gener: String,
-    email: String
-}));
+    nickName: { type: String, default: "新用户" },
+    gener: { type: String, default: "男" },
+})
+
+// 创建 登陆的 jwt 方法
+userSchema.methods.createLoginToken = function () {
+    const token = jwt.sign({ _id: this._id }, config.get('jwtPrivateKey'));
+    return token;
+};
+
+const User = mongoose.model('user', userSchema);
 
 // 验证
 function validateUser (data) {
     const rule = {
         role: Joi.string(),
-        userName: Joi.string().required(),
+        // accountName: Joi.string().required(),
+        email: Joi.string().email(),
         passWord: Joi.string().required(),
         nickName: Joi.string(),
         gener: Joi.string(),
-        email: Joi.string(),
     };
     return Joi.validate(data, rule);
 };
