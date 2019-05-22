@@ -10,14 +10,21 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@hapi/joi": "^15.0.0",
+    "@hapi/joi": "^15.0.2",
     "bcrypt": "^3.0.6",
+    "body-parser": "^1.19.0",
     "config": "^3.1.0",
     "debug": "^4.1.1",
     "express": "^4.16.4",
-    "helmet": "^3.16.0",
+    "helmet": "^3.18.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.5.4",
+    "mime-types": "^2.1.24",
+    "mongoose": "^5.5.8",
     "morgan": "^1.9.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.17.2"
   }
 }

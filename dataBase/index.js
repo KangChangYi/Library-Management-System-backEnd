@@ -1,8 +1,8 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 mongoose.connect('mongodb://localhost/LibraryManagementSystemDB', { useNewUrlParser: true })
-    .then(() => console.log("connection ok!"))
-    .catch(err => console.error(err))
+    .then(() => console.log('connection ok!'))
+    .catch(err => console.error(err));
 
 const bookTypeSchema = new mongoose.Schema({
     typeId: { type: String, required: true },
@@ -28,18 +28,16 @@ const bookTypeSchema = new mongoose.Schema({
     tags: {
         type: Array,
         validate: {
-            validator: function (v) {
+            validator(v) {
                 return v.length > 0;
             },
-            message: '这里写错误信息'
-        }
+            message: '这里写错误信息',
+        },
     },
     typeName: String,
 });
 
 const BookType = mongoose.model('bookTypes', bookTypeSchema);
-
-
 
 
 // 数据库插入
@@ -66,7 +64,7 @@ const BookType = mongoose.model('bookTypes', bookTypeSchema);
 
 
 // 数据库查询
-async function getBookType () {
+async function getBookType() {
     // 比较查询操作符
     // eq (equal)
     // ne (not equal)
@@ -95,7 +93,7 @@ async function getBookType () {
     // .skip((pageNumber - 1) * pageSize)
     // .limit(pageSize)   //固定个数
 
-    // 排序 
+    // 排序
     // .sort({ typeId: 1 })  //1升序  -1降序
 
     // 指定返回项
@@ -105,7 +103,7 @@ async function getBookType () {
     // .count();  //返回查询结果计数
 
     const result = await BookType
-        .find()
+        .find();
 
     console.log(result);
 }

@@ -1,6 +1,6 @@
 const Joi = require('@hapi/joi');              // 引入数据验证类
 const mongoose = require('mongoose');        // 导入 mongodb
-const config = require('config');
+// const config = require('config');
 const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema({
@@ -16,8 +16,8 @@ const userSchema = new mongoose.Schema({
 })
 
 // 创建 登陆的 jwt 方法
-userSchema.methods.createLoginToken = function () {
-    const token = jwt.sign({ _id: this._id }, config.get('jwtPrivateKey'));
+userSchema.methods.createLoginToken = function () {   // config.get('jwtPrivateKey')
+    const token = jwt.sign({ _id: this._id, role: this.role }, "jwtPrivateKey");
     return token;
 };
 
