@@ -6,7 +6,6 @@ const bookInfos = require('../routes/bookInfos');
 const bookTypes = require('../routes/bookTypes'); // 导入 bookType 路由
 const login = require('../routes/login'); // 导入 登陆验证 路由
 
-
 module.exports = function routes(app) {
     // 使用中间件
     app.use(helmet());
@@ -18,6 +17,7 @@ module.exports = function routes(app) {
     app.all('*', (req, res, next) => {
         res.header('Access-Control-Allow-Origin', '*');
         res.header('Access-Control-Allow-Methods', 'DELETE,PUT');
+        res.header('Access-Control-Allow-Headers', 'Content-Type,x-token');
         next();
     });
     //  以 /api/bookType 开头的路由使用 bookType 路由处理

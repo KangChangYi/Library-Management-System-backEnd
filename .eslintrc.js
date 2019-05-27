@@ -19,5 +19,6 @@ module.exports = {
         'no-param-reassign': 'off',
         'import/prefer-default-export': 'off',
         'func-names': ["error", "as-needed"],
+        'no-underscore-dangle': ["error", { "allow": ["_id"] }]
     }
 };

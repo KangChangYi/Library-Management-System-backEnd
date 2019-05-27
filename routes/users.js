@@ -10,20 +10,35 @@ const admin = require('../middleware/admin'); // 导入验证 是否是管理员
 const { User, validateUser } = require('../models/user'); // 导入 User 模块  和 user 验证
 
 // GET 用户列表
-router.get('/', async (req, res) => {
-    const userList = await User
-        .find()
-        .populate('role', 'roleName-_id');
-    res.send(userList);
+router.get('/page/:page', async (req, res) => {
+    try {
+        const { page } = req.params;
+        const userList = await User
+            .find({ role: { $ne: '5cc5842d8fdf583b48486b02' } })
+            .populate('role', 'roleName-_id')
+            .skip((page - 1) * 10)
+            .limit(10)
+            .sort({ auditPass: false });
+
+        const totalCount = await User
+            .countDocuments({ role: { $ne: '5cc5842d8fdf583b48486b02' } });
+
+        return res.send({ userList, totalCount });
+    } catch (error) {
+        return res.status(404).send('未找到对应页面数据');
+    }
 });
 
 // GET 自身用户信息 （带token）
 router.get('/me', auth, async (req, res) => {
-    const user = await User.findById(req.user._id).select('-passWord');
+    const user = await User
+        .findById(req.user._id) // auth 中间件解析 token
+        .select('-password -auditPass -__v')
+        .populate('role', 'roleName-_id');
     res.send(user);
 });
 
-// GET 用户列表（id）
+// GET 指定用户（id）
 router.get('/:id', async (req, res) => {
     try {
         const user = await User
@@ -43,20 +58,20 @@ router.post('/', async (req, res) => {
     }
 
     let user = await User.findOne({ email: req.body.email });
-    if (user) return res.status(400).send('该邮箱已被注册');
+    if (user) return res.status('400').send('该邮箱已被注册');
 
     user = new User({
         role: req.body.role,
         // accountName: req.body.accountName,
         email: req.body.email,
-        passWord: req.body.passWord,
+        password: req.body.password,
     });
 
     const salt = await bcrypt.genSalt(10); // 创建 salt
-    user.passWord = await bcrypt.hash(user.passWord, salt); // hash 密码
+    user.password = await bcrypt.hash(user.password, salt); // hash 密码
 
     user = await user.save();
-    return res.send(user);
+    return res.send('注册成功，等待审核');
 });
 
 // PUT 更新用户信息
@@ -67,7 +82,7 @@ router.put('/:id', auth, async (req, res) => {
     }
     try {
         const user = await User.findByIdAndUpdate(req.params.id, {
-            passWord: req.body.passWord,
+            password: req.body.password,
             nickName: req.body.nickName,
             gener: req.body.gener,
         }, { new: true });
@@ -84,6 +99,17 @@ router.delete('/:id', [auth, admin], async (req, res) => {
         res.send(user);
     } catch (error) {
         res.status('404').send('未找到相应id的用户');
+    }
+});
+
+router.put('/passAuth/:id', [auth, admin], async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, {
+            auditPass: true,
+        }, { new: true });
+        res.send(user);
+    } catch (error) {
+        res.status(404).send('未找到对应id的用户');
     }
 });
 

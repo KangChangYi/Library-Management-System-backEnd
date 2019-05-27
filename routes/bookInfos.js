@@ -74,11 +74,15 @@ router.get('/type/:type', async (req, res) => {
 
 // 搜索图书名 返回图书信息
 router.get('/name/:name', async (req, res) => {
-    const condition = new RegExp(`^${req.params.name}`, 'i');
+    const condition = new RegExp(`${req.params.name}`, 'i');
+    const { page } = req.params;
 
     let bookInfo = await BookInfo
         .find({ bookName: condition })
-        .populate('bookType', ['typeId', 'typeName']);
+        .populate('bookType', ['typeId', 'typeName'])
+        .skip((page - 1) * 8)
+        .limit(8)
+        .sort('bookName');
 
     if (bookInfo) {
         bookInfo = replaceImgToBase64(bookInfo);
