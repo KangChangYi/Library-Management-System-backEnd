@@ -14,23 +14,42 @@ const {
 // Model
 const { BookInfo, validateBookInfo, Book } = require('../models/bookInfo');
 
-// GET 获取所有图书信息
-router.get('/page/:page', async (req, res) => {
+// GET 获取图书信息
+// query : { page:require , limit:require , name , type }
+router.get('/', async (req, res) => {
     try {
-        const { page } = req.params;
-        let bookInfo = await BookInfo
-            .find()
+        let { page, limit } = req.query;
+        const condition = req.query.name !== 'false' ? new RegExp(`${req.query.name}`, 'i') : false;
+        const type = req.query.type !== 'false' ? req.query.type : false;
+
+        let bookInfo = null;
+        let totalCount;
+        if (type && condition) { // 图书类型 和 搜索书名
+            bookInfo = BookInfo.find({ bookType: type, bookName: condition });
+            totalCount = BookInfo.countDocuments({ bookType: type, bookName: condition });
+        } else if (type) { // 图书类型
+            bookInfo = BookInfo.find({ bookType: type });
+            totalCount = BookInfo.countDocuments({ bookType: type });
+        } else if (condition) { // 搜索书名
+            bookInfo = BookInfo.find({ bookName: condition });
+            totalCount = BookInfo.countDocuments({ bookName: condition });
+        } else { // 全部
+            bookInfo = BookInfo.find();
+            totalCount = BookInfo.countDocuments();
+        }
+
+        limit = Number(limit);
+        page = Number(page);
+
+        bookInfo = await bookInfo
             .populate('bookType', ['typeId', 'typeName'])
-            .skip((page - 1) * 8)
-            .limit(8)
+            .skip((page - 1) * limit)
+            .limit(limit)
             .sort('bookName');
 
-        bookInfo = replaceImgToBase64(bookInfo);
-        const totalCount = await BookInfo.countDocuments();
-        // bookInfo.forEach((val, idx) => { // 根据图片名读取图片转为 base64
-        //     const base64 = readImg(val.image);
-        //     bookInfo[idx].image = base64;
-        // });
+        bookInfo = replaceImgToBase64(bookInfo); // 根据图片名读取图片转为 base64
+        totalCount = await totalCount;
+
         return res.send({ bookInfo, totalCount });
     } catch (error) {
         return res.status('404').send('获取图书信息失败');
@@ -51,49 +70,6 @@ router.get('/id/:id', async (req, res) => {
     } catch (error) {
         return res.status('404').send('未找到相应id的图书信息');
     }
-});
-
-// 按图书 Type 获取对应图书信息
-router.get('/type/:type', async (req, res) => {
-    try {
-        let bookInfo = await BookInfo
-            .find({ bookType: req.params.type })
-            .populate('bookType', ['typeId', 'typeName']);
-
-        bookInfo = replaceImgToBase64(bookInfo);
-        const totalCount = await BookInfo.countDocuments({ bookType: req.params.type });
-        // bookInfo.forEach((val, idx) => { // 根据图片名读取图片转为 base64
-        //     const base64 = readImg(val.image);
-        //     bookInfo[idx].image = base64;
-        // });
-        return res.send({ bookInfo, totalCount });
-    } catch (error) {
-        return res.status('400').send('未找到对应类型的图书信息');
-    }
-});
-
-// 搜索图书名 返回图书信息
-router.get('/name/:name', async (req, res) => {
-    const condition = new RegExp(`${req.params.name}`, 'i');
-    const { page } = req.params;
-
-    let bookInfo = await BookInfo
-        .find({ bookName: condition })
-        .populate('bookType', ['typeId', 'typeName'])
-        .skip((page - 1) * 8)
-        .limit(8)
-        .sort('bookName');
-
-    if (bookInfo) {
-        bookInfo = replaceImgToBase64(bookInfo);
-        const totalCount = await BookInfo.countDocuments({ bookName: condition });
-        // bookInfo.forEach((val, idx) => { // 根据图片名读取图片转为 base64
-        //     const base64 = readImg(val.image);
-        //     bookInfo[idx].image = base64;
-        // });
-        return res.send({ bookInfo, totalCount });
-    }
-    return res.status('404').send('未找到相应书籍');
 });
 
 // POST 增加图书信息  默认自带一本书
@@ -128,24 +104,20 @@ router.put('/:id', [auth, admin], async (req, res) => {
         return res.status('400').send(error.details[0].message);
     }
     try {
-        const bookInfo = await BookInfo.findById(req.params.id);
         // 查询到原先的图片  写入新的数据
-        const imgName = await uploadImg(req.body.image, bookInfo.image);
+        let bookInfo = await BookInfo.findById(req.params.id);
         // 更新对应图书图片数据
-        await BookInfo.update({ id: req.params.id }, { image: imgName });
-        bookInfo.image = imgName;
+        await uploadImg(req.body.image, bookInfo.image);
+        // 根据 id 找并更新
+        bookInfo = await BookInfo.findByIdAndUpdate(req.params.id, {
+            bookType: req.body.bookType,
+            bookName: req.body.bookName,
+            author: req.body.author,
+            press: req.body.press,
+            publicationDate: req.body.publicationDate,
+        }, { new: true });
 
         return res.send(bookInfo);
-        // const bookInfo = await BookInfo.findByIdAndUpdate(req.params.id, { // 根据 id 找并更新
-        //     bookType: req.body.bookType,
-        //     bookName: req.body.bookName,
-        //     author: req.body.author,
-        //     image: req.body.image,
-        //     press: req.body.press,
-        //     publicationDate: req.body.publicationDate,
-        // }, { new: true });
-
-        // return res.send(bookInfo);
     } catch (err) {
         return res.status('404').send('未找到对应id的图书信息');
     }
@@ -158,7 +130,7 @@ router.delete('/:id', [auth, admin], async (req, res) => {
         // 查询到原先的图片  删除
         await removeImg(book.image);
         // 删除文档
-        await BookInfo.deleteOne({ id: req.params.id });
+        await BookInfo.deleteOne({ _id: req.params.id });
         res.send('删除成功');
         // const bookInfo = await BookInfo.findByIdAndDelete(req.params.id);
         // res.send(bookInfo);
@@ -167,7 +139,7 @@ router.delete('/:id', [auth, admin], async (req, res) => {
     }
 });
 
-// PUT 图书数量增加
+// POST 图书数量增加
 router.post('/book/:id', [auth, admin], async (req, res) => {
     if (req.body.number < 1) {
         return res.status('400').send('数量不符');

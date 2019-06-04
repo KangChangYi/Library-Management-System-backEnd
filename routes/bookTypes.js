@@ -9,18 +9,40 @@ const { BookType, validateBookType } = require('../models/bookType'); // 导入 
 
 
 // GET 获取图书类别列表
+// query page  limit name
 router.get('/', async (req, res) => {
-    const bookTypeList = await BookType.find().sort('typeName');
-    res.send(bookTypeList);
+    try {
+        let { page, limit } = req.query;
+        const { name } = req.query;
+        const condition = name !== 'false' ? new RegExp(`${name}`, 'i') : false;
+
+        let bookTypeList;
+        if (condition) {
+            bookTypeList = BookType.find({ typeName: condition });
+        } else {
+            bookTypeList = BookType.find();
+        }
+
+        limit = Number(limit);
+        page = Number(page);
+        bookTypeList = await bookTypeList
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .sort('typeName');
+
+        return res.send(bookTypeList);
+    } catch (error) {
+        return res.status('404').send('未找到对应_id');
+    }
 });
 
 // GET 按_id 查找图书类别
 router.get('/:id', async (req, res) => {
     try {
         const bookType = await BookType.findById(req.params.id);
-        res.send(bookType);
+        return res.send(bookType);
     } catch (error) {
-        res.status('404').send('未找到对应_id');
+        return res.status('404').send('未找到对应_id');
     }
 });
 
@@ -44,8 +66,9 @@ router.put('/:id', [auth, admin], async (req, res) => {
         return res.status('400').send(error.details[0].message);
     }
     try {
-        const bookType = await BookType.findByIdAndUpdate(req.params.id,
-            { typeName: req.body.typeName }, { new: true });
+        const bookType = await BookType.findByIdAndUpdate(req.params.id, {
+            typeName: req.body.typeName,
+        }, { new: true });
         return res.send(bookType);
     } catch (err) {
         return res.status('404').send('未找到对应_id');

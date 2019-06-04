@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true },
     password: { type: String, required: true },
     nickName: { type: String, default: '新用户' },
-    gener: { type: String, default: '男' },
+    gender: { type: String, default: '男' },
     auditPass: { type: Boolean, default: false },
 });
 
@@ -32,7 +32,7 @@ function validateUser(data) {
         email: Joi.string().email().required(),
         password: Joi.string().required(),
         nickName: Joi.string(),
-        gener: Joi.string(),
+        gender: Joi.string(),
     };
     return Joi.validate(data, rule);
 }

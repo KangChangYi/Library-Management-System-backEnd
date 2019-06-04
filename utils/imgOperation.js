@@ -52,11 +52,16 @@ function removeImg(imgName) {
     });
 }
 
+// 根据图片名读取图片转为 base64
 function replaceImgToBase64(bookInfo) {
-    bookInfo.forEach((val, idx) => { // 根据图片名读取图片转为 base64
-        const base64 = readImg(val.image);
-        bookInfo[idx].image = base64;
-    });
+    if (Array.isArray(bookInfo)) { // 数组情况下
+        bookInfo.forEach((val, idx) => {
+            const base64 = readImg(val.image);
+            bookInfo[idx].image = base64;
+        });
+    } else {
+        bookInfo.image = readImg(bookInfo.image);
+    }
     return bookInfo;
 }
 

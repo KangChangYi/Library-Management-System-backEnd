@@ -10,22 +10,35 @@ const admin = require('../middleware/admin'); // 导入验证 是否是管理员
 const { User, validateUser } = require('../models/user'); // 导入 User 模块  和 user 验证
 
 // GET 用户列表
-router.get('/page/:page', async (req, res) => {
+// query  : page  limit  name
+router.get('/', async (req, res) => {
     try {
-        const { page } = req.params;
-        const userList = await User
-            .find({ role: { $ne: '5cc5842d8fdf583b48486b02' } })
-            .populate('role', 'roleName-_id')
-            .skip((page - 1) * 10)
-            .limit(10)
-            .sort({ auditPass: false });
+        let { page, limit } = req.query;
+        const { name } = req.query;
+        const condition = name !== 'false' ? new RegExp(`${name}`, 'i') : false;
 
-        const totalCount = await User
-            .countDocuments({ role: { $ne: '5cc5842d8fdf583b48486b02' } });
+        let userList;
+        let totalCount;
+        if (condition) {
+            userList = User.find({ role: { $ne: '5cc5842d8fdf583b48486b02' }, email: condition });
+            totalCount = User.countDocuments({ role: { $ne: '5cc5842d8fdf583b48486b02' }, email: condition });
+        } else {
+            userList = User.find({ role: { $ne: '5cc5842d8fdf583b48486b02' } });
+            totalCount = User.countDocuments({ role: { $ne: '5cc5842d8fdf583b48486b02' } });
+        }
+
+        page = Number(page);
+        limit = Number(limit);
+        userList = await userList
+            .populate('role', 'roleName-_id')
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .sort({ auditPass: false });
+        totalCount = await totalCount;
 
         return res.send({ userList, totalCount });
     } catch (error) {
-        return res.status(404).send('未找到对应页面数据');
+        return res.status(404).send('未找到对应用户数据');
     }
 });
 
@@ -76,32 +89,50 @@ router.post('/', async (req, res) => {
 
 // PUT 更新用户信息
 router.put('/:id', auth, async (req, res) => {
-    const { error } = validateUser(req.body);
-    if (error) {
-        return res.status('400').send(error.details[0].message);
-    }
+    // const { error } = validateUser(req.body);
+    // if (error) {
+    //     return res.status(400).send(error.details[0].message);
+    // }
     try {
         const user = await User.findByIdAndUpdate(req.params.id, {
-            password: req.body.password,
             nickName: req.body.nickName,
-            gener: req.body.gener,
+            gender: req.body.gender,
         }, { new: true });
         return res.send(user);
     } catch (err) {
-        return res.status('404').send('未找到相应id的用户');
+        return res.status(404).send('未找到相应id的用户');
     }
 });
 
+// PUT 修改密码
+router.put('/password/:id', auth, async (req, res) => {
+    try {
+        let user = await User.findById(req.params.id);
+        const validatePassWord = await bcrypt.compare(req.body.oldPassword, user.password);
+        if (!validatePassWord) return res.status(400).send('密码错误');
+
+        const salt = await bcrypt.genSalt(10); // 创建 salt
+        const newPassword = await bcrypt.hash(req.body.newPassword, salt); // hash 密码
+        // 修改密码
+        user = await User.findByIdAndUpdate(req.params.id, {
+            password: newPassword,
+        });
+        return res.send('密码修改成功');
+    } catch (error) {
+        return res.status(500).send('修改密码失败');
+    }
+});
 // DELETE 删除用户
 router.delete('/:id', [auth, admin], async (req, res) => {
     try {
         const user = await User.findOneAndDelete(req.params.id);
         res.send(user);
     } catch (error) {
-        res.status('404').send('未找到相应id的用户');
+        res.status(404).send('未找到相应id的用户');
     }
 });
 
+// PUT 用户权限通过
 router.put('/passAuth/:id', [auth, admin], async (req, res) => {
     try {
         const user = await User.findByIdAndUpdate(req.params.id, {

@@ -25,7 +25,6 @@ router.post('/', async (req, res) => {
     if (!user.auditPass) { return res.status(403).send('该账号尚未通过审核'); }
     if (!user) { return res.status(400).send('邮箱或密码错误'); }
 
-
     const validatePassWord = await bcrypt.compare(req.body.password, user.password);
     if (!validatePassWord) return res.status(400).send('邮箱或密码错误');
 
