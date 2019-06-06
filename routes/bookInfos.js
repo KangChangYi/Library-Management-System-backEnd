@@ -52,7 +52,7 @@ router.get('/', async (req, res) => {
 
         return res.send({ bookInfo, totalCount });
     } catch (error) {
-        return res.status('404').send('获取图书信息失败');
+        return res.status('500').send('获取图书信息失败');
     }
 });
 
@@ -138,6 +138,8 @@ router.delete('/:id', [auth, admin], async (req, res) => {
         res.status('404').send('未找到对应id的图书信息');
     }
 });
+
+// 图书信息中的图书操作 ↓↓↓↓↓↓
 
 // POST 图书数量增加
 router.post('/book/:id', [auth, admin], async (req, res) => {

@@ -11,7 +11,7 @@ const { User, validateUser } = require('../models/user'); // 导入 User 模块 
 
 // GET 用户列表
 // query  : page  limit  name
-router.get('/', async (req, res) => {
+router.get('/', [auth, admin], async (req, res) => {
     try {
         let { page, limit } = req.query;
         const { name } = req.query;

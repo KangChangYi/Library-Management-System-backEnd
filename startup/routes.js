@@ -1,10 +1,12 @@
 const express = require('express'); // 引入 express 框架
 const helmet = require('helmet'); // 帮助我们通过设置http头部增加安全性
-const users = require('../routes/users'); // 导入 user 路由
-const roles = require('../routes/roles'); // 导入 role 路由
+// 导入 路由
+const users = require('../routes/users');
+const roles = require('../routes/roles');
 const bookInfos = require('../routes/bookInfos');
-const bookTypes = require('../routes/bookTypes'); // 导入 bookType 路由
-const login = require('../routes/login'); // 导入 登陆验证 路由
+const bookTypes = require('../routes/bookTypes');
+const login = require('../routes/login');
+const borrows = require('../routes/borrows');
 
 module.exports = function routes(app) {
     // 使用中间件
@@ -23,6 +25,7 @@ module.exports = function routes(app) {
     //  以 /api/bookType 开头的路由使用 bookType 路由处理
     app.use('/api/bookInfo', bookInfos);
     app.use('/api/bookType', bookTypes);
+    app.use('/api/borrow', borrows);
     app.use('/api/role', roles);
     app.use('/api/user', users);
     app.use('/api/login', login);
