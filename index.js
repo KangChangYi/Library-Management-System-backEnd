@@ -1,7 +1,7 @@
 // const debug = require('debug')("startup");  // debugger  取代 console.log
 const express = require('express');
-// 引入 express 框架
-const app = express();
+
+const app = express();// 引入 express 框架
 
 // const morgan = require('morgan');           // 进行http请求的日志记录
 

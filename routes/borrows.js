@@ -6,6 +6,7 @@ const auth = require('../middleware/authenticating'); // 导入验证 token 中�
 
 // Model
 const { Borrow, validateBorrow, validateReturn } = require('../models/borrow');
+const { Role } = require('../models/role');
 const { BookInfo } = require('../models/bookInfo');
 const { User } = require('../models/user'); // 导入 User 模块
 
@@ -38,10 +39,17 @@ router.post('/:id', [auth], async (req, res) => {
         if (error) {
             return res.status(400).send(error.details[0].message);
         }
-        // 根据权限 决定不同应还日期
+        // 查询用户信息
         const userInfo = await User.findById(req.body.userId);
+        // 当前用户权限
+        const userRole = await Role.findById(userInfo.role);
+        // 当前借阅数量
+        const borrowNumber = await Borrow.find({ userId: userInfo._id }).countDocuments();
+        // 根据权限 决定不同最大借书数量
+        if (borrowNumber >= userRole.maxLend) { return res.status(403).send('无法继续借书'); }
+        // 根据权限 决定不同应还日期
         let shouldDate;
-        if (userInfo.role.toString() === '5cc5843da817d63c606f501f') {
+        if (userRole.roleName === '教师') {
             shouldDate = new Date(Date.now() + (1000 * 60 * 60 * 24 * 90)); // 教师
         } else {
             shouldDate = new Date(Date.now() + (1000 * 60 * 60 * 24 * 60)); // 学生
@@ -102,12 +110,13 @@ router.put('/:id', [auth], async (req, res) => {
         // 计算罚款
         const sDate = new Date(borrow.shouldDate).getTime(); // 应还日期
         const rDate = new Date().getTime(); // 还书如期
+        borrow.isPayment = true;
         // 罚款金额
         let amountFine = 0;
         if (rDate > sDate) {
             amountFine = (rDate - sDate) / (1000 * 60 * 60 * 24);
-            borrow.amountFine = amountFine / 10; //  1天 = 0.1
-            borrow.isPayment = true;
+            borrow.amountFine = (amountFine / 10).toFixed(1); //  1天 = 0.1
+            borrow.isPayment = false;
         }
         borrow.returnDate = new Date();
         borrow.isLend = false;

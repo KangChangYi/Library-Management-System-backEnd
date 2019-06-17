@@ -8,7 +8,7 @@ const admin = require('../middleware/admin'); // 导入验证 是否是管理员
 const { Role, validateRole } = require('../models/role');
 
 // GET 获取角色列表
-router.get('/', [auth, admin], async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const roleList = await Role.find();
         return res.send(roleList);
