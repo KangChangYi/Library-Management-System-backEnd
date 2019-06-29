@@ -3,6 +3,5 @@ module.exports = function isAdmin(req, res, next) {
     if (req.user.role !== '5cc5842d8fdf583b48486b02') { // 管理员的 Object id
         return res.status(403).send('仅管理员可操作');
     }
-    next();
-    return true;
+    return next();
 };

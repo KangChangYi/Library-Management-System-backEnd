@@ -22,6 +22,7 @@ module.exports = function routes(app) {
         res.header('Access-Control-Allow-Headers', 'Content-Type,x-token');
         next();
     });
+
     //  以 /api/bookType 开头的路由使用 bookType 路由处理
     app.use('/api/bookInfo', bookInfos);
     app.use('/api/bookType', bookTypes);

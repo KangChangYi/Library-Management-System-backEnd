@@ -1,43 +1,43 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost/LibraryManagementSystemDB', { useNewUrlParser: true })
-    .then(() => console.log('connection ok!'))
-    .catch(err => console.error(err));
+// mongoose.connect('mongodb://localhost/LibraryManagementSystemDB', { useNewUrlParser: true })
+//     .then(() => console.log('connection ok!'))
+//     .catch(err => console.error(err));
 
-const bookTypeSchema = new mongoose.Schema({
-    typeId: { type: String, required: true },
-    // schema 类型选项
-    // lowercase: true
-    // setter 和 getter
-    // get:v => Math.round(v),
-    // set:v => Math.round(v),
-    // 内置验证器
-    // typeId: {
-    //     // 类型
-    //     type: String,
-    //     // 必填
-    //     required: true,
-    //     // 必须是其中一个
-    //     enum: ['1', '2', '3'],
-    //     // 最小和最大长度
-    //     minlength: 5,
-    //     maxlength: 255,
-    // },
+// const bookTypeSchema = new mongoose.Schema({
+// typeId: { type: String, required: true },
+// schema 类型选项
+// lowercase: true
+// setter 和 getter
+// get:v => Math.round(v),
+// set:v => Math.round(v),
+// 内置验证器
+// typeId: {
+//     // 类型
+//     type: String,
+//     // 必填
+//     required: true,
+//     // 必须是其中一个
+//     enum: ['1', '2', '3'],
+//     // 最小和最大长度
+//     minlength: 5,
+//     maxlength: 255,
+// },
 
-    // 自定义验证器 可异步
-    tags: {
-        type: Array,
-        validate: {
-            validator(v) {
-                return v.length > 0;
-            },
-            message: '这里写错误信息',
-        },
-    },
-    typeName: String,
-});
+// 自定义验证器 可异步
+//     tags: {
+//         type: Array,
+//         validate: {
+//             validator(v) {
+//                 return v.length > 0;
+//             },
+//             message: '这里写错误信息',
+//         },
+//     },
+//     typeName: String,
+// });
 
-const BookType = mongoose.model('bookTypes', bookTypeSchema);
+// const BookType = mongoose.model('bookTypes', bookTypeSchema);
 
 
 // 数据库插入
@@ -64,50 +64,43 @@ const BookType = mongoose.model('bookTypes', bookTypeSchema);
 
 
 // 数据库查询
-async function getBookType() {
-    // 比较查询操作符
-    // eq (equal)
-    // ne (not equal)
-    // gt (greater than)
-    // gte (greater than equal to)
-    // lt (less than)
-    // lte (less than equal to)
-    // in
-    // nin (not in)
-    // .find({ typeId: { $in: ['1', '2'] } }) //比较查询操作符
+// 比较查询操作符
+// eq (equal)
+// ne (not equal)
+// gt (greater than)
+// gte (greater than equal to)
+// lt (less than)
+// lte (less than equal to)
+// in
+// nin (not in)
+// .find({ typeId: { $in: ['1', '2'] } }) //比较查询操作符
 
-    // 逻辑查询操作符
-    // or
-    // and
-    // .or([{ typeId: 1 }, { typeName: '技术类' }]) //逻辑查询操作符
+// 逻辑查询操作符
+// or
+// and
+// .or([{ typeId: 1 }, { typeName: '技术类' }]) //逻辑查询操作符
 
-    // 支持正则
-    // .find({ typeName: /^'文学类'/ }) //以文学类开头
-    // .fine({ typeName: /'文学类$/' }) //以文学类结尾
+// 支持正则
+// .find({ typeName: /^'文学类'/ }) //以文学类开头
+// .fine({ typeName: /'文学类$/' }) //以文学类结尾
 
-    // 分页
-    // const pageNumber = 2;
-    // const pageSize = 10;
-    // const result = await BookType
-    // .find()
-    // .skip((pageNumber - 1) * pageSize)
-    // .limit(pageSize)   //固定个数
+// 分页
+// const pageNumber = 2;
+// const pageSize = 10;
+// const result = await BookType
+// .find()
+// .skip((pageNumber - 1) * pageSize)
+// .limit(pageSize)   //固定个数
 
-    // 排序
-    // .sort({ typeId: 1 })  //1升序  -1降序
+// 排序
+// .sort({ typeId: 1 })  //1升序  -1降序
 
-    // 指定返回项
-    // .select({ typeId: 1, typeName: 1}) //只需返回这两项
+// 指定返回项
+// .select({ typeId: 1, typeName: 1}) //只需返回这两项
 
-    // 计数
-    // .count();  //返回查询结果计数
+// 计数
+// .count();  //返回查询结果计数
 
-    const result = await BookType
-        .find();
-
-    console.log(result);
-}
-getBookType();
 // 指明数据库          // 指定集合名称       // 指定文件名        // 表明数据是json数组
 // mongoimport --db mongo-exercises --collection courses --file filename.json --jsonArray
 
