@@ -1,9 +1,7 @@
-## Node.js + Express + MongoDB
-Restful风格
+# 图书馆管理系统 - 后端📚
 
-## startup
+## 启动
 ```
-   // 依赖
    npm install
    
    // 全局jwt名
@@ -16,3 +14,5 @@ Restful风格
    nodemon 
    
 ```
+采用 Node.js 开发。
++ 项目架构为 Express + MongoDB + Restful API 
